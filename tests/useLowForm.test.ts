@@ -58,6 +58,18 @@ describe('useLowForm', () => {
     expect(mockSubmitCallback).toHaveBeenCalledWith({ test1: '', test2: '' });
   });
 
+  it('sets the default value or default checked attribute as the value at initialization', async () => {
+    const { result, submitForm } = setup();
+    act(() => {
+      result.current.registerElement('test3', 'default value!');
+      result.current.registerElement('test4', true);
+    });
+    submitForm();
+    const mockSubmissionValues = mockSubmitCallback.mock.calls[0][0];
+    expect(mockSubmissionValues.test3).toEqual('default value!');
+    expect(mockSubmissionValues.test4).toEqual(true);
+  });
+
   it('prevents the default submit event behavior', () => {
     const { submitForm } = setup();
     submitForm();

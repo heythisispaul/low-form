@@ -12,12 +12,14 @@ export interface LowFormFormState {
   submitCount: number;
   isFormInvalid: boolean;
   isFormDirty: boolean;
-  formValues?: Record<string, any>;
   fieldErrors?: Record<string, any>;
 }
 
 export interface UseLowFormHookReturn {
-  registerElement: (key: string) => (event: SyntheticEvent) => void;
+  registerElement: (
+    key: string,
+    defaultValue?: string | boolean,
+  ) => (event: SyntheticEvent) => void;
   handleFormSubmit: (event: SyntheticEvent) => Promise<void>;
   getFormState: () => LowFormFormState;
 }
@@ -30,7 +32,7 @@ export interface UseLowFormOptions {
 }
 
 export const validateSubmission = async (
-  formValues: Record<string, any>,
+  formValues: Record<string, any> = {},
   schema: AnyObjectSchema,
 ) => {
   const getErrorAtField = async (field: string, value: any) => {
@@ -61,7 +63,7 @@ const useLowForm = ({
   schema,
   previousSubmits = 0,
 }: UseLowFormOptions): UseLowFormHookReturn => {
-  const formValues = useRef<Record<string, any>>({});
+  const formValuesRef = useRef<Record<string, any>>({});
   const [formState, setFormState] = useState<LowFormFormState>({
     isFormInvalid: false,
     isFormDirty: false,
@@ -71,9 +73,9 @@ const useLowForm = ({
 
   const updateFormStateOnSubmit = useCallback((errorState: Omit<LowFormFormState, 'submitCount' | 'isFormDirty'>) => {
     setFormState({
+      ...errorState,
       submitCount: formState.submitCount + 1,
       isFormDirty: true,
-      ...errorState,
     });
   }, [formState]);
 
@@ -86,7 +88,7 @@ const useLowForm = ({
 
   const getFormState = useCallback(() => ({
     ...formState,
-    formValues: formValues.current,
+    formData: { ...formValuesRef.current },
   }), [formState]);
 
   useEffect(() => {
@@ -95,29 +97,29 @@ const useLowForm = ({
     }
   }, [getFormState, formStateCallback, formState.submitCount]);
 
-  const registerElement = (key: string) => {
-    if (typeof formValues.current[key] === 'undefined') {
-      formValues.current[key] = '';
+  const registerElement = (key: string, defaultValue?: string | boolean) => {
+    if (typeof formValuesRef.current[key] === 'undefined') {
+      formValuesRef.current[key] = defaultValue || '';
     }
     return (event: SyntheticEvent) => {
       if (!formState.isFormDirty) {
         setFormDirty();
       }
-      formValues.current[key] = (event.target as HTMLInputElement).value;
+      formValuesRef.current[key] = (event.target as HTMLInputElement).value;
     };
   };
 
   const handleFormSubmit = useCallback(async (event: SyntheticEvent) => {
     event.preventDefault();
     if (schema) {
-      const errorResult = await validateSubmission(formValues.current, schema);
+      const errorResult = await validateSubmission(formValuesRef.current, schema);
       if (errorResult.isFormInvalid) {
         updateFormStateOnSubmit(errorResult);
         return;
       }
     }
     updateFormStateOnSubmit({ isFormInvalid: false, fieldErrors: {} });
-    submitCallback(formValues.current);
+    submitCallback({ ...formValuesRef.current });
   }, [schema, submitCallback, updateFormStateOnSubmit]);
 
   return { registerElement, handleFormSubmit, getFormState };

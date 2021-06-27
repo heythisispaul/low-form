@@ -50,9 +50,7 @@ export const LowForm: FC<LowFormProps & { children?: ReactNode | ReactNodeArray 
     if (!providedChildren) {
       return [];
     }
-    const arrayCopy = (
-      Array.isArray(providedChildren) ? [...providedChildren] : [providedChildren]
-    );
+    const arrayCopy = Array.isArray(providedChildren) ? [...providedChildren] : [providedChildren];
     const mutatedArray: ReactNodeArray = [];
     arrayCopy.forEach((child, index) => {
       if (isValidElement(child)) {
@@ -60,6 +58,8 @@ export const LowForm: FC<LowFormProps & { children?: ReactNode | ReactNodeArray 
           children,
           id,
           disabled: elementDisabled,
+          defaultChecked,
+          defaultValue,
         } = child?.props;
 
         const disabled = elementDisabled || isFormDisabled;
@@ -69,7 +69,7 @@ export const LowForm: FC<LowFormProps & { children?: ReactNode | ReactNodeArray 
         if (isFormElement) {
           mutatedArray.push(cloneElement(child, {
             key: `input-${formId}-${id}`,
-            onChange: registerElement(id),
+            onChange: registerElement(id, defaultValue || defaultChecked),
             disabled,
           }));
 
