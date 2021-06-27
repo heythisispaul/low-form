@@ -26,6 +26,8 @@ module.exports = {
     'react/prop-types': 'off',
     'react/jsx-filename-extension': 'off',
     'import/extensions': 'off',
+    'linebreak-style': 'off',
+    'no-use-before-define': 'off', // see https://github.com/typescript-eslint/typescript-eslint/issues/2540#issuecomment-692505191
   },
   settings: {
     'import/resolver': {

@@ -1,6 +1,6 @@
 {
   "name": "low-form",
-  "version": "0.1.1",
+  "version": "0.1.4",
   "description": "An experiment to create the simplest React form API",
   "main": "dist/index.js",
   "files": [
@@ -8,8 +8,9 @@
   ],
   "scripts": {
     "test": "jest",
-    "posttest": "eslint src/**/* && eslint tests/**/*",
-    "build": "rollup -c"
+    "posttest1": "eslint src/**/* && eslint tests/**/*",
+    "build": "rollup -c",
+    "prepack": "npm run build"
   },
   "keywords": [
     "React",
@@ -26,7 +27,8 @@
     "react-dom": "^17.0.2"
   },
   "jest": {
-    "preset": "ts-jest"
+    "preset": "ts-jest",
+    "testEnvironment": "jsdom"
   },
   "dependencies": {
     "@hookform/resolvers": "^2.6.0",
@@ -36,6 +38,8 @@
   },
   "devDependencies": {
     "@rollup/plugin-node-resolve": "^13.0.0",
+    "@testing-library/jest-dom": "^5.14.1",
+    "@testing-library/react": "^12.0.0",
     "@types/jest": "^26.0.23",
     "@types/react": "^17.0.11",
     "@typescript-eslint/eslint-plugin": "^4.28.0",
@@ -48,6 +52,7 @@
     "eslint-plugin-react": "^7.24.0",
     "eslint-plugin-react-hooks": "^4.2.0",
     "jest": "^27.0.5",
+    "react-dom": "^17.0.2",
     "rollup": "^2.52.3",
     "rollup-plugin-typescript2": "^0.30.0",
     "ts-jest": "^27.0.3",

@@ -1,39 +1,43 @@
 /* eslint-disable no-unused-vars */
-// eslint-disable-next-line no-use-before-define
 import React, {
   FC,
-  Component,
   memo,
   cloneElement,
   isValidElement,
-  ReactChild,
   CSSProperties,
   SyntheticEvent,
+  ReactNode,
+  ReactNodeArray,
 } from 'react';
 import { useForm, FormState } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { AnyObjectSchema } from 'yup';
 
+export interface LowFormErrorComponentProps {
+  message: string;
+  name: string;
+}
+
 export interface LowFormProps {
-  onSubmit: (formData: unknown) => void | Promise<void>;
-  stateHandler?: (formState: FormState<unknown>) => void | Promise<void>;
+  onSubmit: (formData: any) => void | Promise<void>;
+  stateHandler?: (formState: FormState<any>) => void | Promise<void>;
   schema?: AnyObjectSchema;
-  formId?: string | number;
+  id?: string;
   isFormDisabled?: boolean;
   style?: CSSProperties;
   className?: string;
   autoComplete?: 'off' | 'on';
-  errorComponent?: FC | Component;
+  errorComponent?: FC<LowFormErrorComponentProps>;
 }
 
-export const LowForm: FC<LowFormProps & { children: ReactChild[] }> = ({
+export const LowForm: FC<LowFormProps & { children?: ReactNode | ReactNodeArray }> = ({
   children: topLevelChildren,
   onSubmit,
   schema,
   isFormDisabled,
   stateHandler,
-  formId,
-  errorComponent,
+  id: formId = 'form',
+  errorComponent: ErrorComponent,
   style = {},
   autoComplete = 'on',
   className = '',
@@ -54,7 +58,7 @@ export const LowForm: FC<LowFormProps & { children: ReactChild[] }> = ({
     hookSubmission(event);
   };
 
-  const copyFormPropsToChildren: any = (providedChildren: ReactChild | ReactChild[]) => {
+  const copyFormPropsToChildren: any = (providedChildren?: ReactNode | ReactNodeArray) => {
     if (!providedChildren) {
       return [];
     }
@@ -68,31 +72,30 @@ export const LowForm: FC<LowFormProps & { children: ReactChild[] }> = ({
 
       if (isValidElement(child)) {
         const {
-          name,
           children,
-          errorComponent: inputError,
+          id,
           disabled: elementDisabled,
         } = child?.props;
 
         const disabled = elementDisabled || isFormDisabled;
+        const isFormElement = id && (child.type === 'select' || child.type === 'input');
 
-        if (name) {
+        if (isFormElement) {
           mutatedArray.push(cloneElement(child, {
-            key: `input-${formId}-${name}`,
-            ...register(name),
+            key: `input-${formId}-${id}`,
+            ...register(id),
             disabled,
           }));
 
-          const ErrorComponent = inputError || errorComponent;
-
           if (ErrorComponent) {
-            const message = formState?.errors[child.props.name]?.message;
+            const message = formState?.errors[id]?.message;
             const WrappedErrorComponent = () => (
               message
-                ? <ErrorComponent message={message} name={name} />
+                ? <ErrorComponent message={message} name={id} />
                 : null
             );
-            mutatedArray.splice(i + 1, 0, <WrappedErrorComponent key={`error-${formId}-${name}`} />);
+
+            mutatedArray.push(<WrappedErrorComponent key={`error-${formId}-${id}`} />);
           }
         } else {
           mutatedArray.push(cloneElement(child, {
@@ -105,6 +108,7 @@ export const LowForm: FC<LowFormProps & { children: ReactChild[] }> = ({
         mutatedArray.push(child);
       }
     }
+
     return mutatedArray;
   };
 
@@ -112,6 +116,8 @@ export const LowForm: FC<LowFormProps & { children: ReactChild[] }> = ({
 
   return (
     <form
+      data-testid="form"
+      id={formId}
       style={style}
       className={className}
       onSubmit={submissionWrapper}
