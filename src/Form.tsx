@@ -5,13 +5,11 @@ import React, {
   cloneElement,
   isValidElement,
   CSSProperties,
-  SyntheticEvent,
   ReactNode,
   ReactNodeArray,
 } from 'react';
-import { useForm, FormState } from 'react-hook-form';
-import { yupResolver } from '@hookform/resolvers/yup';
 import { AnyObjectSchema } from 'yup';
+import useLowForm, { LowFormFormState } from './useLowForm';
 
 export interface LowFormErrorComponentProps {
   message: string;
@@ -20,7 +18,7 @@ export interface LowFormErrorComponentProps {
 
 export interface LowFormProps {
   onSubmit: (formData: any) => void | Promise<void>;
-  stateHandler?: (formState: FormState<any>) => void | Promise<void>;
+  updateCallback?: (state: LowFormFormState) => void | Promise<void>;
   schema?: AnyObjectSchema;
   id?: string;
   isFormDisabled?: boolean;
@@ -32,31 +30,21 @@ export interface LowFormProps {
 
 export const LowForm: FC<LowFormProps & { children?: ReactNode | ReactNodeArray }> = ({
   children: topLevelChildren,
-  onSubmit,
+  onSubmit: submitCallback,
+  updateCallback: formStateCallback = () => {},
   schema,
   isFormDisabled,
-  stateHandler,
   id: formId = 'form',
   errorComponent: ErrorComponent,
   style = {},
   autoComplete = 'on',
   className = '',
 }) => {
-  const formOpts = schema ? { resolver: yupResolver(schema) } : {};
-  const {
-    register,
-    formState,
-    handleSubmit,
-  } = useForm(formOpts);
-  const hookSubmission = handleSubmit(onSubmit);
-
-  const submissionWrapper = (event: SyntheticEvent) => {
-    event.preventDefault();
-    if (stateHandler) {
-      stateHandler(formState);
-    }
-    hookSubmission(event);
-  };
+  const { registerElement, handleFormSubmit, getFormState } = useLowForm({
+    submitCallback,
+    formStateCallback,
+    schema,
+  });
 
   const copyFormPropsToChildren: any = (providedChildren?: ReactNode | ReactNodeArray) => {
     if (!providedChildren) {
@@ -64,12 +52,9 @@ export const LowForm: FC<LowFormProps & { children?: ReactNode | ReactNodeArray 
     }
     const arrayCopy = (
       Array.isArray(providedChildren) ? [...providedChildren] : [providedChildren]
-    ).reverse();
-    const mutatedArray = [];
-    // eslint-disable-next-line no-plusplus
-    for (let i = arrayCopy.length - 1; i >= 0; i--) {
-      const child = arrayCopy[i];
-
+    );
+    const mutatedArray: ReactNodeArray = [];
+    arrayCopy.forEach((child, index) => {
       if (isValidElement(child)) {
         const {
           children,
@@ -79,16 +64,17 @@ export const LowForm: FC<LowFormProps & { children?: ReactNode | ReactNodeArray 
 
         const disabled = elementDisabled || isFormDisabled;
         const isFormElement = id && (child.type === 'select' || child.type === 'input');
+        const formState = getFormState();
 
         if (isFormElement) {
           mutatedArray.push(cloneElement(child, {
             key: `input-${formId}-${id}`,
-            ...register(id),
+            onChange: registerElement(id),
             disabled,
           }));
 
           if (ErrorComponent) {
-            const message = formState?.errors[id]?.message;
+            const message = formState?.fieldErrors?.[id];
             const WrappedErrorComponent = () => (
               message
                 ? <ErrorComponent message={message} name={id} />
@@ -99,7 +85,7 @@ export const LowForm: FC<LowFormProps & { children?: ReactNode | ReactNodeArray 
           }
         } else {
           mutatedArray.push(cloneElement(child, {
-            key: `child-${formId}-${i}`,
+            key: `child-${formId}-${index}`,
             children: copyFormPropsToChildren(children),
             disabled,
           }));
@@ -107,7 +93,7 @@ export const LowForm: FC<LowFormProps & { children?: ReactNode | ReactNodeArray 
       } else {
         mutatedArray.push(child);
       }
-    }
+    });
 
     return mutatedArray;
   };
@@ -120,7 +106,7 @@ export const LowForm: FC<LowFormProps & { children?: ReactNode | ReactNodeArray 
       id={formId}
       style={style}
       className={className}
-      onSubmit={submissionWrapper}
+      onSubmit={handleFormSubmit}
       autoComplete={autoComplete}
     >
       {childrenWithFormProps}

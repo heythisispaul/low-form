@@ -7,7 +7,7 @@ import {
   waitFor,
 } from '@testing-library/react';
 import * as yup from 'yup';
-import { LowForm, LowFormErrorComponentProps, LowFormProps } from '../src';
+import { LowForm, LowFormErrorComponentProps, LowFormProps } from '../src/Form';
 
 describe('LowForm Component', () => {
   const onSubmit = jest.fn();
@@ -27,18 +27,18 @@ describe('LowForm Component', () => {
     const rendered = render(
       <LowForm
         onSubmit={(data) => onSubmit(data)}
-        stateHandler={stateHandler}
+        updateCallback={stateHandler}
         // eslint-disable-next-line react/jsx-props-no-spreading
         {...props}
       >
         <div>
-          <input aria-label="one" name="one" />
-          <input aria-label="two" name="two" />
+          <input aria-label="one" id="one" />
+          <input aria-label="two" id="two" />
         </div>
         <div>
           <SomeComponent>
-            <input aria-label="three" name="three" />
-            <input aria-label="four" name="four" />
+            <input aria-label="three" id="three" />
+            <input aria-label="four" id="four" />
           </SomeComponent>
         </div>
         <button data-testid="submit" type="submit">Submit</button>
@@ -61,7 +61,7 @@ describe('LowForm Component', () => {
       expect(screen.queryByText(childText)).toBeInTheDocument();
     });
 
-    it('registers inputs with names', async () => {
+    it('registers inputs with IDs', async () => {
       setup();
       fireEvent.change(getInputByLabel('one'), { target: { value: 'meow' } });
       fireEvent.change(getInputByLabel('two'), { target: { value: 'woof' } });
@@ -101,15 +101,19 @@ describe('LowForm Component', () => {
       four: yup.number().min(10, 'four must be greater than 10'),
     });
 
-    it('does not submit if the inputs do not pass the schema', () => {
+    it('does not submit if the inputs do not pass the schema', async () => {
       setup({ schema });
-      fireEvent.submit(getForm());
+      await waitFor(() => {
+        fireEvent.submit(getForm());
+      });
       expect(onSubmit).not.toHaveBeenCalled();
     });
 
-    it('still fires the stateHandler even if submission is not successful', () => {
+    it('still fires the stateHandler even if submission is not successful', async () => {
       setup({ schema });
-      fireEvent.submit(getForm());
+      await waitFor(() => {
+        fireEvent.submit(getForm());
+      });
       expect(onSubmit).not.toHaveBeenCalled();
       expect(stateHandler).toHaveBeenCalled();
     });

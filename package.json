@@ -1,6 +1,6 @@
 {
   "name": "low-form",
-  "version": "0.1.4",
+  "version": "0.1.2",
   "description": "An experiment to create the simplest React form API",
   "main": "dist/index.js",
   "files": [
@@ -8,7 +8,7 @@
   ],
   "scripts": {
     "test": "jest",
-    "posttest1": "eslint src/**/* && eslint tests/**/*",
+    "posttest": "eslint src/**/* && eslint tests/**/*",
     "build": "rollup -c",
     "prepack": "npm run build"
   },
@@ -31,15 +31,14 @@
     "testEnvironment": "jsdom"
   },
   "dependencies": {
-    "@hookform/resolvers": "^2.6.0",
     "react": "^17.0.2",
-    "react-hook-form": "^7.9.0",
     "yup": "^0.32.9"
   },
   "devDependencies": {
     "@rollup/plugin-node-resolve": "^13.0.0",
     "@testing-library/jest-dom": "^5.14.1",
     "@testing-library/react": "^12.0.0",
+    "@testing-library/react-hooks": "^7.0.0",
     "@types/jest": "^26.0.23",
     "@types/react": "^17.0.11",
     "@typescript-eslint/eslint-plugin": "^4.28.0",
