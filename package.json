@@ -1,6 +1,6 @@
 {
   "name": "low-form",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "An experiment to create the simplest React form API",
   "main": "dist/index.js",
   "files": [

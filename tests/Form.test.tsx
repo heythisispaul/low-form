@@ -39,6 +39,7 @@ describe('LowForm Component', () => {
           <SomeComponent>
             <input aria-label="three" id="three" />
             <input aria-label="four" id="four" />
+            <input aria-labelledby="Fifth One" id="five" />
           </SomeComponent>
         </div>
         <button data-testid="submit" type="submit">Submit</button>
@@ -74,6 +75,7 @@ describe('LowForm Component', () => {
           two: 'woof',
           three: 'hello',
           four: 'goodbye',
+          five: '',
         });
       });
     });
@@ -129,6 +131,18 @@ describe('LowForm Component', () => {
         fireEvent.submit(getForm());
       });
       expect(screen.queryByText(errorMessage)).toBeInTheDocument();
+    });
+  });
+
+  describe('generates labels', () => {
+    it('generates and maps labels for inputs with aria-labelledby', () => {
+      const rendered = setup();
+      expect(rendered.getByLabelText('Fifth One')).toBeInTheDocument();
+    });
+
+    it('does not generate labels if the skip prop is passed', () => {
+      const rendered = setup({ skipLabelGeneration: true });
+      expect(rendered.queryAllByLabelText('Fifth One').length).toEqual(0);
     });
   });
 });

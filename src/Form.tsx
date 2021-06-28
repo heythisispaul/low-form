@@ -19,6 +19,8 @@ export interface LowFormErrorComponentProps {
 export interface LowFormProps {
   onSubmit: (formData: any) => void | Promise<void>;
   updateCallback?: (state: LowFormFormState) => void | Promise<void>;
+  skipLabelGeneration?: boolean;
+  labelClassName?: string;
   schema?: AnyObjectSchema;
   id?: string;
   isFormDisabled?: boolean;
@@ -32,6 +34,8 @@ export const LowForm: FC<LowFormProps & { children?: ReactNode | ReactNodeArray 
   children: topLevelChildren,
   onSubmit: submitCallback,
   updateCallback: formStateCallback = () => {},
+  skipLabelGeneration,
+  labelClassName,
   schema,
   isFormDisabled,
   id: formId = 'form',
@@ -64,11 +68,25 @@ export const LowForm: FC<LowFormProps & { children?: ReactNode | ReactNodeArray 
 
         const disabled = elementDisabled || isFormDisabled;
         const isFormElement = id && (child.type === 'select' || child.type === 'input');
+
+        const labelValue = child?.props['aria-labelledby'];
+        const generatingLabel = labelValue && !skipLabelGeneration;
+        const labelTag = `label-${formId}-${id}`;
+
         const formState = getFormState();
 
         if (isFormElement) {
+          if (generatingLabel) {
+            mutatedArray.push(
+              <label id={labelTag} htmlFor={id} key={labelTag} className={labelClassName}>
+                {labelValue}
+              </label>,
+            );
+          }
+
           mutatedArray.push(cloneElement(child, {
             key: `input-${formId}-${id}`,
+            'aria-labelledby': (generatingLabel ? labelTag : labelValue) || '',
             onChange: registerElement(id, defaultValue || defaultChecked),
             disabled,
           }));
