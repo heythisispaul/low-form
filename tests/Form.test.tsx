@@ -27,7 +27,7 @@ describe('LowForm Component', () => {
     const rendered = render(
       <LowForm
         onSubmit={(data) => onSubmit(data)}
-        updateCallback={stateHandler}
+        onStateUpdate={stateHandler}
         // eslint-disable-next-line react/jsx-props-no-spreading
         {...props}
       >

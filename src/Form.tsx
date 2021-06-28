@@ -18,7 +18,7 @@ export interface LowFormErrorComponentProps {
 
 export interface LowFormProps {
   onSubmit: (formData: any) => void | Promise<void>;
-  updateCallback?: (state: LowFormFormState) => void | Promise<void>;
+  onStateUpdate?: (state: LowFormFormState) => void | Promise<void>;
   skipLabelGeneration?: boolean;
   labelClassName?: string;
   schema?: AnyObjectSchema;
@@ -33,7 +33,7 @@ export interface LowFormProps {
 export const LowForm: FC<LowFormProps & { children?: ReactNode | ReactNodeArray }> = ({
   children: topLevelChildren,
   onSubmit: submitCallback,
-  updateCallback: formStateCallback = () => {},
+  onStateUpdate: formStateCallback = () => {},
   skipLabelGeneration,
   labelClassName,
   schema,

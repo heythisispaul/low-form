@@ -1,19 +1,21 @@
 # low-form
 An experiment to create the lowest-impact React form API.
 
-This library was created as the result of one question: What would a form with the least code overhead look like? What would a component that made HMTL forms that "just work" have to do? It provides a React component which can be wrapped around form elements in order to create a working, [uncontrolled](https://reactjs.org/docs/uncontrolled-components.html) form with simple features:
+This library was created as the result of one question: What would a form with the least code overhead look like? What would a component that made HMTL forms that "just work" have to do? What's the simplest React/form API that could exist while still being sort of useful?
+
+`low-form` is the result if playing with this idea. It is a React component which can be wrapped around form elements in order to create a working, [uncontrolled](https://reactjs.org/docs/uncontrolled-components.html) form with some simple but (hopefully) useful features:
 
 * Validation on submission
 * Extendable submission handling
-* Creates [ARIA](https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA) compliant labels
+* Generates [ARIA](https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA) compliant labels
 * Form-level and input-level error messaging
 * Open to any styling
 
-Please keep in mind, so far this is just an experiment and not necessarily intended for production use. The goal of this project was to experiment with creating the leanest API when constructing forms, not necessarily creating the most robust or performant. There's some anti-patterns happening, such as directly mutating `children` and native DOM elements. With this simplified boilerplate goal in mind, a lot of things have been abstracted away, and you may find that `low-form` will not meet all of your form-related needs. A few things that `low-form` *can't* do:
+Please keep in mind, so far this is just an experiment and not necessarily intended for production use. The goal of this project was to experiment with creating the leanest API when constructing forms, not creating the most robust or performant form library. There's some anti-patterns happening, such as directly mutating `children` and native DOM elements that may have some unintended side effects in larger applications. Additionally, with this simplified boilerplate goal in mind, a lot of things have been abstracted away from the user, and you may find that `low-form` will not meet all of your form-related needs. A few things that `low-form` *can't* do:
 
 * onBlur checking
 * Validation at onBlur and onChange
-* Dynamically work with `input` or `select` elements that are not its direct children (they can be as deeply nested as needed)
+* Dynamically work with `input` or `select` elements that are not its direct children (they can be as deeply nested as needed, but need to be in the body of the `Form` component)
 
 However if you find that your form needs are simple, or you're also interested in the pursuit of the leanest form API, then please feel free to check it out.
 
@@ -64,12 +66,12 @@ The HMTL output of this form looks like:
 </div>
 ```
 
-Checkout a [Code Sandbox](#) of a styled version of this form.
+Checkout a [Code Sandbox](https://codesandbox.io/s/quickstart-hd6ry?file=/src/App.js) of a styled version of this form.
 
 In this example, `low-form` takes care of a few things for you:
 
 * All of the form submission data is easily collected and handled with one function
-* A `label` is generated and id-linked to each corresponding `input` and appended *before* each `input` as a sibling element
+* A `label` is generated and id-linked to each corresponding `input` and appended *before* each `input` as a sibling element. By default, if an `aria-labelledby` property is found on an `input` or `select`, the text provided is used as a new `label`'s text, and an id is used to link it to the form it was created from
 * The only one re-render required to complete the full transaction: The submit triggers a check of the state to determine what `onSubmit` should be provided
 
 If you don't want or need the dynamically generated labels, then you can simply pass a `skipLabelGeneration` prop and they will be short-circuited during rendering. If you want to provide a custom class to the label elements rendered, a `labelClassName` can be provide to `Form` and it will be included during rendering.
@@ -114,7 +116,7 @@ const ValidatedForm = () => {
 export default ValidatedForm;
 ```
 
-Checkout a [Code Sandbox](#) of a styled version of this form.
+Checkout a [Code Sandbox](https://codesandbox.io/s/validation-example-0mvuy?file=/src/App.js) of a styled version of this form.
 
 With thes two props, we've gained some helpful functionality:
 
@@ -131,3 +133,24 @@ If you want more customization over your error messages, or do not want them app
 * `fieldErrors` (object): Contains all of the `yup` keys and their corresponding error message if the validation failed. If the validation was successful, the key will still exist but its value is set to `null`.
 
 ## Full Form API
+
+The `Form` component exported from `low-form` can take the following properties along with the standard `className` and `style` properties:
+
+| Name                  | Type              | Required | Default | Description                                                                                                                                                                                                                                              |
+|-----------------------|-------------------|----------|---------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `onSubmit`            | `function`        | Yes      | None    | The callback function that will be invoked on each *successful* form submission. It is invoked with an object where each `input`'s id is the key, and it's current `value` is the value.                                                                 |
+| `updateCallback`      | `function`        | No       | None    | A callback that is invoked on *every* form submission. It is provided the full form state that `low-form` maintains, check the 'Validation' section for details.                                                                                         |
+| `skipLabelGeneration` | `boolean`         | No       | `false` | By default, if an `input` or `select` have an `aria-labelledby` property, the value provided is used as the `innerText` of a new label generated that is linked via ID to the original input. You can suppress this behavior by supplying this property. |
+| `labelClassName`      | `string`          | No       | None    | This value will be set as the `className` value of each `label` element generated during rendering.                                                                                                                                                      |
+| `schema`              | `AnyObjectSchema` | No       | None    | A `yup` schema object that will be used to validate the form submission against. Check the 'validation' section for more information.                                                                                                                    |
+| `isFormDisabled`      | `boolean`         | No       | `false` | If set to true, will disable all `button`, `select`, and `input` elements within the form.                                                                                                                                                               |
+| `autoComplete`        | 'off' \| 'on'     | No       | 'on'    |  Determines if auto complete boxes will appear when a form element is selected.                                                                                                                                                                          |
+| `errorComponent`      | React Component   | No       | None    | A React component that will be appended as a sibling *after* each corresponding `select` or `input` that did not pass validation. It is provided the failed input's error message as `message` and the `input`'s id as `id` as props.                    |
+| `id`                  | `string`          | No       | 'form'  | Passed as the normal id for the `form` rendered. It is also used as the unique identifier for `id` and `key` values when generating elements. It should be unique between `<Form />` instances to prevent clashing.                                      |
+
+
+# Contributing
+
+All PRs are welcome. As mentioned before, this library was borne mainly out of the simple question: "What's the simplest React/form API that could exist while still being sort of useful?"
+
+If you find yourself using it, find a bug, or think of another way to make it even more ridiculous, please feel free to contribute. Just ensure your tests and the README are updated accordingly before opening your PR.
