@@ -1,7 +1,7 @@
 # low-form
-An experiment to create the lowest-impact React form API.
+An experiment to create the lowest impact React form API.
 
-This library was created as the result of one question: What would a form with the least code overhead look like? What would a component that made HMTL forms that "just work" have to do? What's the simplest React/form API that could exist while still being sort of useful?
+This library was created to be the answer to one question: What would a form with the least code overhead look like? What would a component that made HMTL forms that "just work" have to do? What's the simplest React/form API that could exist while still being sort of useful?
 
 `low-form` is the result if playing with this idea. It is a React component which can be wrapped around form elements in order to create a working, [uncontrolled](https://reactjs.org/docs/uncontrolled-components.html) form with some simple but (hopefully) useful features:
 
@@ -11,7 +11,9 @@ This library was created as the result of one question: What would a form with t
 * Form-level and input-level error messaging
 * Open to any styling
 
-Please keep in mind, so far this is just an experiment and not necessarily intended for production use. The goal of this project was to experiment with creating the leanest API when constructing forms, not creating the most robust or performant form library. There's some anti-patterns happening, such as directly mutating `children` and native DOM elements that may have some unintended side effects in larger applications. Additionally, with this simplified boilerplate goal in mind, a lot of things have been abstracted away from the user, and you may find that `low-form` will not meet all of your form-related needs. A few things that `low-form` *can't* do:
+Please keep in mind, so far this is just an experiment and not necessarily intended for production use. The goal of this project was to experiment with creating the leanest API when constructing forms, not creating the most robust or performant form library.
+
+There's some anti-patterns happening, such as directly mutating `children` and native DOM elements that may have some unintended side effects in larger applications. Additionally, with this simplified boilerplate goal in mind, a lot of things have been abstracted away from the user, and you may find that `low-form` will not meet all of your form-related needs. A few things that `low-form` *can't* do:
 
 * onBlur checking
 * Validation at onBlur and onChange
@@ -31,7 +33,7 @@ npm install low-form
 import Form from 'low-form';
 
 const SimpleForm = () => {
-  const onSubmit = (data) => console(data);
+  const onSubmit = (data) => console.log(data);
   return (
     <Form onSubmit={onSubmit}>
       <input id="first" aria-labelledby="First Name" />
@@ -47,23 +49,21 @@ export default SimpleForm;
 
 The HMTL output of this form looks like:
 ```html
-<div id="root">
-  <form data-testid="form" id="form" class="" autocomplete="on">
-    <label id="label-form-first" for="first">
-      First Name
-    </label>
-    <input id="first" aria-labelledby="label-form-first">
-    <label id="label-form-last" for="last">
-      Last Name
-    </label>
-    <input id="last" aria-labelledby="label-form-last">
-    <label id="label-form-email" for="email">
-      Email Address
-    </label>
-    <input id="email" aria-labelledby="label-form-email" value="example@example.com">
-    <button type="submit">Submit</button>
-  </form>
-</div>
+<form data-testid="form" id="form" class="" autocomplete="on">
+  <label id="label-form-first" for="first">
+    First Name
+  </label>
+  <input id="first" aria-labelledby="label-form-first">
+  <label id="label-form-last" for="last">
+    Last Name
+  </label>
+  <input id="last" aria-labelledby="label-form-last">
+  <label id="label-form-email" for="email">
+    Email Address
+  </label>
+  <input id="email" aria-labelledby="label-form-email" value="example@example.com">
+  <button type="submit">Submit</button>
+</form>
 ```
 
 Checkout a [Code Sandbox](https://codesandbox.io/s/quickstart-hd6ry?file=/src/App.js) of a styled version of this form.
@@ -71,10 +71,10 @@ Checkout a [Code Sandbox](https://codesandbox.io/s/quickstart-hd6ry?file=/src/Ap
 In this example, `low-form` takes care of a few things for you:
 
 * All of the form submission data is easily collected and handled with one function
-* A `label` is generated and id-linked to each corresponding `input` and appended *before* each `input` as a sibling element. By default, if an `aria-labelledby` property is found on an `input` or `select`, the text provided is used as a new `label`'s text, and an id is used to link it to the form it was created from
-* The only one re-render required to complete the full transaction: The submit triggers a check of the state to determine what `onSubmit` should be provided
+* A `label` is generated and id-linked to each corresponding `input` and appended *before* each `input` as a sibling element. By default, if an `aria-labelledby` property is found on an `input` or `select`, the text provided is used as a new `label`'s text, and an id is used to link it the input from which it was generated
+* Only one re-render required to complete the full transaction: The submit triggers a check of the state to determine what `onSubmit` should be provided
 
-If you don't want or need the dynamically generated labels, then you can simply pass a `skipLabelGeneration` prop and they will be short-circuited during rendering. If you want to provide a custom class to the label elements rendered, a `labelClassName` can be provide to `Form` and it will be included during rendering.
+If you don't want or need the dynamically generated labels, then you can simply pass a `skipLabelGeneration` prop and they will be short-circuited during rendering. If you want to provide a custom class to the label elements rendered, a `labelClassName` can be provide to `Form` and it will be included on each label during rendering.
 
 ## Validation
 
